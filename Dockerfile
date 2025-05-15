@@ -10,20 +10,20 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat git
 
 # PNPM 설치
-RUN npm install -g pnpm@8.15.1
+RUN npm install -g pnpm
 
 # 패키지 파일 복사
 COPY package.json pnpm-lock.yaml* ./
 
 # 의존성 설치
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --force
 
 # 애플리케이션 빌드 단계
 FROM base AS builder
 WORKDIR /app
 
 # PNPM 설치
-RUN npm install -g pnpm@8.15.1
+RUN npm install -g pnpm
 
 # 의존성 복사
 COPY --from=deps /app/node_modules ./node_modules
@@ -35,7 +35,7 @@ RUN touch .env.local && \
     echo "OPENAI_API_KEY=$OPENAI_API_KEY" >> .env.local
 
 # Next.js 빌드
-RUN pnpm build
+RUN pnpm build --force
 
 # 프로덕션 이미지
 FROM base AS runner
