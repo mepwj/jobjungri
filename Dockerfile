@@ -35,7 +35,7 @@ RUN touch .env.local && \
     echo "OPENAI_API_KEY=$OPENAI_API_KEY" >> .env.local
 
 # Next.js 빌드
-RUN pnpm build --force
+RUN pnpm build
 
 # 프로덕션 이미지
 FROM base AS runner
