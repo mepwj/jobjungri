@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: jobjungri-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+      - MONGO_INITDB_DATABASE=jobjungri
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - jobjungri-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  nextjs:
+    image: ${DOCKER_IMAGE}
+    container_name: jobjungri-nextjs
+    ports:
+      - "8080:8080"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    environment:
+      - MONGODB_URI=mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/jobjungri?authSource=admin
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    networks:
+      - jobjungri-network
+    restart: unless-stopped
+
+networks:
+  jobjungri-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+    driver: local
